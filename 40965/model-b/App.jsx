@@ -4,12 +4,12 @@ import {
   CardContent, 
   CardHeader, 
   CardTitle, 
-  CardFooter
+  CardFooter,
+  Input,
+  Button,
+  Label,
 } from "@/components/ui/card";
 
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 function App() {
   const [invoiceNumber, setInvoiceNumber] = useState(1000);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
