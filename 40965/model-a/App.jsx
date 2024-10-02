@@ -1,80 +1,47 @@
 import React, { useState } from 'react';
 import { 
   Card, CardContent, CardHeader, CardTitle, 
-  CardFooter, Button, Input, Label, Textarea 
+  Button, Input, Label, Table, TableBody, 
+  TableCell, TableHeader, TableRow 
 } from "@/components/ui";
 
-// Invoice Item Component
-const InvoiceItem = ({ item, onChange, onRemove }) => {
-  return (
-    <Card className="mb-4">
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div>
-            <Label>Name</Label>
-            <Input value={item.name} onChange={(e) => onChange({...item, name: e.target.value})} />
-          </div>
-          <div>
-            <Label>Quantity</Label>
-            <Input type="number" value={item.quantity} onChange={(e) => onChange({...item, quantity: e.target.value})} />
-          </div>
-          <div>
-            <Label>Unit Price</Label>
-            <Input type="number" value={item.unitPrice} onChange={(e) => onChange({...item, unitPrice: e.target.value})} />
-          </div>
-          <div>
-            <Label>Item Price</Label>
-            <Input disabled value={(item.quantity * item.unitPrice).toFixed(2)} />
-          </div>
-        </div>
-        <Button className="mt-2" variant="destructive" onClick={onRemove}>Remove</Button>
-      </CardContent>
-    </Card>
-  );
-};
-
-// Main App Component
-export default function App() {
+const InvoiceBuilder = () => {
   const [invoice, setInvoice] = useState({
-    number: Math.floor(Math.random() * 10000), // Simple auto-generation
+    number: Math.floor(Math.random() * 10000),
     date: new Date().toISOString().split('T')[0],
     amount: 0,
     tax: 0,
-    client: { name: '', address: '', contactNumber: '', email: '' },
-    company: { name: '', address: '', bankDetails: '' },
-    items: [{ name: '', quantity: 1, unitPrice: 0, itemPrice: 0 }]
+    client: { name: '', address: '', contact: '', email: '' },
+    company: { name: '', address: '', bankName: '', accountNumber: '' },
+    items: [{ name: '', quantity: 1, unitPrice: 0, itemPrice: 0 }],
   });
 
-  const updateInvoice = (field, value) => {
-    setInvoice(prev => ({...prev, [field]: value}));
-  };
-
-  const updateItem = (index, updatedItem) => {
-    const items = [...invoice.items];
-    items[index] = updatedItem;
-    items[index].itemPrice = updatedItem.quantity * updatedItem.unitPrice;
-    updateInvoice('items', items);
-    calculateTotal();
+  const updateField = (field, value, section = null) => {
+    if (section) {
+      setInvoice(prev => ({...prev, [section]: {...prev[section], [field]: value}}));
+    } else if (field === 'items') {
+      setInvoice(prev => ({...prev, items: value}));
+    } else {
+      setInvoice({...invoice, [field]: value});
+    }
   };
 
   const addItem = () => {
     setInvoice(prev => ({
-      ...prev, 
+      ...prev,
       items: [...prev.items, { name: '', quantity: 1, unitPrice: 0, itemPrice: 0 }]
     }));
   };
 
-  const removeItem = (index) => {
-    const items = invoice.items.filter((_, i) => i !== index);
-    updateInvoice('items', items);
-    calculateTotal();
+  const calculateTotal = () => {
+    const subtotal = invoice.items.reduce((sum, item) => 
+      sum + (item.quantity * item.unitPrice), 0);
+    const taxAmount = subtotal * (invoice.tax / 100);
+    return subtotal + taxAmount;
   };
 
-  const calculateTotal = () => {
-    const amount = invoice.items.reduce((sum, item) => sum + (item.itemPrice || 0), 0);
-    const tax = amount * 0.10; // Assuming 10% tax for simplicity
-    updateInvoice('amount', amount);
-    updateInvoice('tax', tax);
+  const printInvoice = () => {
+    window.print();
   };
 
   return (
@@ -84,45 +51,65 @@ export default function App() {
           <CardTitle>Invoice Builder</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
-            <Input label="Invoice Number" disabled value={invoice.number} />
-            <Input label="Date" type="date" value={invoice.date} onChange={(e) => updateInvoice('date', e.target.value)} />
-            {/* Client Details */}
-            {['name', 'address', 'contactNumber', 'email'].map(field => (
-              <Input 
-                key={field} 
-                label={`Client ${field.replace(/^\w/, c => c.toUpperCase())}`} 
-                value={invoice.client[field]} 
-                onChange={(e) => updateInvoice('client', {...invoice.client, [field]: e.target.value})} 
-              />
+          {/* Invoice Details */}
+          <div className="mb-4">
+            <Label>Invoice Number: {invoice.number}</Label>
+            <Input className="mt-2" type="date" value={invoice.date} onChange={(e) => updateField('date', e.target.value)} />
+          </div>
+
+          {/* Client Details */}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold">Client Details</h3>
+            {['name', 'address', 'contact', 'email'].map(field => (
+              <Input key={field} placeholder={`Client ${field}`} value={invoice.client[field]} onChange={(e) => updateField(field, e.target.value, 'client')} />
             ))}
-            {/* Items */}
-            {invoice.items.map((item, index) => (
-              <InvoiceItem 
-                key={index} 
-                item={item} 
-                onChange={(updatedItem) => updateItem(index, updatedItem)}
-                onRemove={() => removeItem(index)}
-              />
+          </div>
+
+          {/* Items */}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold">Items</h3>
+            {invoice.items.map((item, idx) => (
+              <div key={idx} className="grid grid-cols-4 gap-2 mb-2">
+                <Input placeholder="Name" value={item.name} onChange={(e) => {
+                  let items = [...invoice.items];
+                  items[idx].name = e.target.value;
+                  items[idx].itemPrice = items[idx].unitPrice * items[idx].quantity;
+                  updateField('items', items);
+                }} />
+                <Input type="number" placeholder="Qty" value={item.quantity} onChange={(e) => {
+                  let items = [...invoice.items];
+                  items[idx].quantity = Number(e.target.value);
+                  items[idx].itemPrice = items[idx].unitPrice * items[idx].quantity;
+                  updateField('items', items);
+                }} />
+                <Input type="number" placeholder="Unit Price" value={item.unitPrice} onChange={(e) => {
+                  let items = [...invoice.items];
+                  items[idx].unitPrice = Number(e.target.value);
+                  items[idx].itemPrice = items[idx].unitPrice * items[idx].quantity;
+                  updateField('items', items);
+                }} />
+                <Label>Price: {item.itemPrice}</Label>
+              </div>
             ))}
             <Button onClick={addItem}>Add Item</Button>
-            {/* Company Details */}
-            <Textarea 
-              label="Company Details" 
-              value={`${invoice.company.name}\n${invoice.company.address}\nBank: ${invoice.company.bankDetails}`}
-              onChange={(e) => {
-                const [name, address, bankDetails] = e.target.value.split('\n');
-                updateInvoice('company', { name, address, bankDetails });
-              }}
-            />
+          </div>
+
+          {/* Company Details */}
+          <div>
+            <h3 className="text-lg font-semibold">Company Details</h3>
+            {['name', 'address', 'bankName', 'accountNumber'].map(field => (
+              <Input key={field} placeholder={`Company ${field}`} value={invoice.company[field]} onChange={(e) => updateField(field, e.target.value, 'company')} />
+            ))}
           </div>
         </CardContent>
         <CardFooter>
-          <p>Total Amount: ${invoice.amount.toFixed(2)}</p>
-          <p>Tax: ${invoice.tax.toFixed(2)}</p>
-          <p>Grand Total: ${(invoice.amount + invoice.tax).toFixed(2)}</p>
+          <Button onClick={printInvoice}>Print Invoice</Button>
         </CardFooter>
       </Card>
     </div>
   );
+};
+
+export default function App() {
+  return <InvoiceBuilder />;
 }
