@@ -34,10 +34,13 @@ function App() {
 
   // Function to convert currency
   const convertCurrency = (fromCurrency, amount) => {
-    console.log(fromCurrency, Object.keys(CURRENCY_RATES))
     const usdValue = amount / CURRENCY_RATES[fromCurrency];
-    return Object.keys(CURRENCY_RATES).filter(x => x !== fromCurrency).reduce((acc, curr) => {
-      acc[curr] = (usdValue * CURRENCY_RATES[curr]).toFixed(2);
+    return Object.keys(CURRENCY_RATES).reduce((acc, curr) => {
+      if (curr === fromCurrency) {
+        acc[curr] = (usdValue * CURRENCY_RATES[curr])  
+      } else {
+        acc[curr] = (usdValue * CURRENCY_RATES[curr]).toFixed(2);
+      }
       return acc;
     }, {});
   };
