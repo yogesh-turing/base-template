@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const InvoiceBuilder = () => {
@@ -72,23 +73,23 @@ const InvoiceBuilder = () => {
             <div className="mb-4">
               <Label>Client Details</Label>
               {['name', 'address', 'contact', 'email'].map(field => (
-                <Input key={field} placeholder={field.replace(/^\w/, c => c.toUpperCase())} 
-                  value={invoice.client[field]} 
-                  onChange={(e) => updateField(field, e.target.value, 'client')} 
+                <Input key={field} placeholder={field.replace(/^\w/, c => c.toUpperCase())}
+                  value={invoice.client[field]}
+                  onChange={(e) => updateField(field, e.target.value, 'client')}
                   className="mb-2" />
               ))}
             </div>
             <div className="mb-4">
               <Label>Company Details</Label>
               {['name', 'address'].map(field => (
-                <Input key={field} placeholder={field.replace(/^\w/, c => c.toUpperCase())} 
-                  value={invoice.company[field]} 
-                  onChange={(e) => updateField(field, e.target.value, 'company')} 
+                <Input key={field} placeholder={field.replace(/^\w/, c => c.toUpperCase())}
+                  value={invoice.company[field]}
+                  onChange={(e) => updateField(field, e.target.value, 'company')}
                   className="mb-2" />
               ))}
-              <Input placeholder="Account Number" value={invoice.company.bank.accountNumber} 
+              <Input placeholder="Account Number" value={invoice.company.bank.accountNumber}
                 onChange={(e) => updateField('accountNumber', e.target.value, 'company.bank')} />
-              <Input placeholder="Bank Name" value={invoice.company.bank.bankName} 
+              <Input placeholder="Bank Name" value={invoice.company.bank.bankName}
                 onChange={(e) => updateField('bankName', e.target.value, 'company.bank')} />
             </div>
             <div className="mb-4">
