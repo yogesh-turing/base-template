@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const InvoiceBuilder = () => {
@@ -32,6 +32,7 @@ const InvoiceBuilder = () => {
   const updateItem = (index, field, value) => {
     const items = [...invoice.items];
     items[index] = { ...items[index], [field]: value, itemPrice: items[index].quantity * items[index].unitPrice };
+    items[index].itemPrice = (items[index].quantity || 0) * (items[index].unitPrice || 0)
     setInvoice(prev => ({ ...prev, items, amount: calculateTotal() }));
   };
 
@@ -76,7 +77,7 @@ const InvoiceBuilder = () => {
                 <Input key={field} placeholder={field.replace(/^\w/, c => c.toUpperCase())}
                   value={invoice.client[field]}
                   onChange={(e) => updateField(field, e.target.value, 'client')}
-                  className="mb-2" />
+                  className="mt-2" />
               ))}
             </div>
             <div className="mb-4">
@@ -85,12 +86,14 @@ const InvoiceBuilder = () => {
                 <Input key={field} placeholder={field.replace(/^\w/, c => c.toUpperCase())}
                   value={invoice.company[field]}
                   onChange={(e) => updateField(field, e.target.value, 'company')}
-                  className="mb-2" />
+                  className="mt-2" />
               ))}
               <Input placeholder="Account Number" value={invoice.company.bank.accountNumber}
-                onChange={(e) => updateField('accountNumber', e.target.value, 'company.bank')} />
+                onChange={(e) => updateField('accountNumber', e.target.value, 'company.bank')}
+                className="mt-2" />
               <Input placeholder="Bank Name" value={invoice.company.bank.bankName}
-                onChange={(e) => updateField('bankName', e.target.value, 'company.bank')} />
+                onChange={(e) => updateField('bankName', e.target.value, 'company.bank')}
+                className="mt-2" />
             </div>
             <div className="mb-4">
               <Label>Items</Label>
@@ -106,7 +109,7 @@ const InvoiceBuilder = () => {
                 <TableBody>
                   {invoice.items.map((item, index) => (
                     <TableRow key={index}>
-                      <TableCell><Input value={item.name} onChange={(e) => updateItem(index, 'name', e.target.value)} /></TableCell>
+                      <TableCell><Input placeholder="Item name" value={item.name} onChange={(e) => updateItem(index, 'name', e.target.value)} /></TableCell>
                       <TableCell><Input type="number" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', e.target.value)} /></TableCell>
                       <TableCell><Input type="number" value={item.unitPrice} onChange={(e) => updateItem(index, 'unitPrice', e.target.value)} /></TableCell>
                       <TableCell>{item.itemPrice}</TableCell>
@@ -116,9 +119,12 @@ const InvoiceBuilder = () => {
               </Table>
               <Button onClick={addItem} className="mt-2">Add Item</Button>
             </div>
-            <div className="flex justify-between">
-              <Input type="number" placeholder="Tax (%)" value={invoice.tax} onChange={(e) => updateField('tax', e.target.value)} />
-              <div>Total: ${calculateTotal().toFixed(2)}</div>
+            <div className="">
+              <div>
+                <Label>Text (%):</Label>
+                <Input type="number" placeholder="Tax (%)" value={invoice.tax} onChange={(e) => updateField('tax', e.target.value)} />
+              </div>
+              <div className='mt-2'><Label>Total:</Label> ${calculateTotal().toFixed(2)}</div>
             </div>
           </div>
           <Button onClick={handlePrint}>Print Invoice</Button>

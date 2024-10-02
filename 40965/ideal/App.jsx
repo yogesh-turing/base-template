@@ -1,159 +1,139 @@
-import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
-} from "@/components/ui/card";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
-import {Label} from "@/components/ui/label";
+import React, { useState, useRef } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-function App() {
-  const [invoiceNumber, setInvoiceNumber] = useState(1000);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [amount, setAmount] = useState(0);
-  const [tax, setTax] = useState(0);
-  const [client, setClient] = useState({ name: '', address: '', contact: '', email: '' });
-  const [items, setItems] = useState([{ name: '', quantity: 1, unitPrice: 0 }]);
-  const [company, setCompany] = useState({
-    name: '', 
-    address: '', 
-    bankAccount: '', 
-    bankName: ''
+const InvoiceBuilder = () => {
+  const [invoice, setInvoice] = useState({
+    number: Math.floor(Math.random() * 10000),
+    date: new Date().toISOString().split('T')[0],
+    amount: 0,
+    tax: 0,
+    client: { name: '', address: '', contact: '', email: '' },
+    items: [{ name: '', quantity: 1, unitPrice: 0, itemPrice: 0 }],
+    company: { name: '', address: '', bank: { accountNumber: '', bankName: '' } }
   });
 
-  const handleItemChange = (index, field, value) => {
-    const newItems = [...items];
-    newItems[index][field] = value;
-    newItems[index].itemPrice = newItems[index].quantity * newItems[index].unitPrice;
-    setItems(newItems);
-    calculateTotal();
+  const calculateTotal = () => {
+    const total = invoice.items.reduce((acc, item) => acc + item.itemPrice, 0);
+    return total + (total * invoice.tax / 100);
+  };
+
+  const updateField = (field, value, parent = null) => {
+    if (parent) {
+      setInvoice(prev => ({ ...prev, [parent]: { ...prev[parent], [field]: value } }));
+    } else {
+      setInvoice(prev => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const updateItem = (index, field, value) => {
+    const items = [...invoice.items];
+    items[index] = { ...items[index], [field]: value, itemPrice: items[index].quantity * items[index].unitPrice };
+    items[index].itemPrice = (items[index].quantity || 0) * (items[index].unitPrice || 0)
+    setInvoice(prev => ({ ...prev, items, amount: calculateTotal() }));
   };
 
   const addItem = () => {
-    setItems([...items, { name: '', quantity: 1, unitPrice: 0, itemPrice: 0 }]);
+    setInvoice(prev => ({
+      ...prev,
+      items: [...prev.items, { name: '', quantity: 1, unitPrice: 0, itemPrice: 0 }]
+    }));
   };
 
-  const removeItem = (index) => {
-    const newItems = items.filter((_, i) => i !== index);
-    setItems(newItems);
-    calculateTotal();
-  };
+  const invoiceRef = useRef();
 
-  const calculateTotal = () => {
-    const subtotal = items.reduce((acc, item) => acc + (item.itemPrice || 0), 0);
-    setAmount(subtotal);
-    setTax(subtotal * 0.1); // Assuming 10% tax for simplicity
+  const handlePrint = () => {
+    const printContents = invoiceRef.current.innerHTML;
+    const originalContents = document.body.innerHTML;
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
   };
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 ">
-      <Card className="mb-6">
+    <div className="p-4 sm:p-8">
+      <Card className="max-w-3xl mx-auto">
         <CardHeader>
           <CardTitle>Invoice Builder</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-4 sm:grid-cols-2 gap-4">
-            {/* Invoice Details */}
-            <div >
-              <Label>Invoice Number</Label>
-              <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} readOnly />
-            </div>
-            <div>
-              <Label>Date</Label>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-            </div>
-            <div>
-              <Label>Amount</Label>
-              <Input value={amount} readOnly />
-            </div>
-            <div>
-              <Label>Tax</Label>
-              <Input value={tax} readOnly />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Client Details */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Client Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <div> 
-              <Label>Name</Label>
-              <Input label="Name" value={client.name} onChange={(e) => setClient({...client, name: e.target.value})} />
-          </div>
-          <div> 
-              <Label>Address</Label>
-              <Input label="Address" value={client.address} onChange={(e) => setClient({...client, address: e.target.value})} />
-          </div>
-          <div> 
-              <Label>Contact Number</Label>
-              <Input label="Contact Number" value={client.contact} onChange={(e) => setClient({...client, contact: e.target.value})} />
-          </div>
-          <div> 
-              <Label>Email</Label>
-              <Input label="Email" value={client.email} onChange={(e) => setClient({...client, email: e.target.value})} />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Item Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Items</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {items.map((item, index) => (
-            <div key={index} className="grid grid-cols-4 gap-2 mb-2 items-center">
-              <div> 
-                  <Label>Name</Label>
-                  <Input label="Name" value={item.name} onChange={(e) => handleItemChange(index, 'name', e.target.value)} />
+          <div ref={invoiceRef} className="mb-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <Label>Invoice Number</Label>
+                <Input value={invoice.number} readOnly />
               </div>
-              <div> 
-                  <Label>Qty</Label>
-                  <Input label="Qty" type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value))} />
+              <div>
+                <Label>Date</Label>
+                <Input type="date" value={invoice.date} onChange={(e) => updateField('date', e.target.value)} />
               </div>
-              <div> 
-                  <Label>Unit Price</Label>
-                  <Input label="Unit Price" type="number" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value))} />
-              </div>
-              <Button variant="destructive" onClick={() => removeItem(index)}>Remove</Button>
             </div>
-          ))}
-          <Button className="mt-2 w-full"  onClick={addItem}>Add Item</Button>
-        </CardContent>
-      </Card>
-
-      {/* Company Details */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Company Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div> 
-              <Label>Company Name</Label>
-              <Input label="Company Name" value={company.name} onChange={(e) => setCompany({...company, name: e.target.value})} />
-          </div>
-          <div> 
-              <Label>Address</Label>
-              <Input label="Address" value={company.address} onChange={(e) => setCompany({...company, address: e.target.value})} />
+            <div className="mb-4">
+              <Label>Client Details</Label>
+              {['name', 'address', 'contact', 'email'].map(field => (
+                <Input key={field} placeholder={field.replace(/^\w/, c => c.toUpperCase())}
+                  value={invoice.client[field]}
+                  onChange={(e) => updateField(field, e.target.value, 'client')}
+                  className="mt-2" />
+              ))}
+            </div>
+            <div className="mb-4">
+              <Label>Company Details</Label>
+              {['name', 'address'].map(field => (
+                <Input key={field} placeholder={field.replace(/^\w/, c => c.toUpperCase())}
+                  value={invoice.company[field]}
+                  onChange={(e) => updateField(field, e.target.value, 'company')}
+                  className="mt-2" />
+              ))}
+              <Input placeholder="Account Number" value={invoice.company.bank.accountNumber}
+                onChange={(e) => updateField('accountNumber', e.target.value, 'company.bank')}
+                className="mt-2" />
+              <Input placeholder="Bank Name" value={invoice.company.bank.bankName}
+                onChange={(e) => updateField('bankName', e.target.value, 'company.bank')}
+                className="mt-2" />
+            </div>
+            <div className="mb-4">
+              <Label>Items</Label>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Unit Price</TableHead>
+                    <TableHead>Price</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoice.items.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell><Input placeholder="Item name" value={item.name} onChange={(e) => updateItem(index, 'name', e.target.value)} /></TableCell>
+                      <TableCell><Input type="number" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', e.target.value)} /></TableCell>
+                      <TableCell><Input type="number" value={item.unitPrice} onChange={(e) => updateItem(index, 'unitPrice', e.target.value)} /></TableCell>
+                      <TableCell>{item.itemPrice}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <Button onClick={addItem} className="mt-2">Add Item</Button>
+            </div>
+            <div className="">
+              <div>
+                <Label>Text (%):</Label>
+                <Input type="number" placeholder="Tax (%)" value={invoice.tax} onChange={(e) => updateField('tax', e.target.value)} />
               </div>
-          <div> 
-              <Label>Bank Account</Label>
-              <Input label="Bank Account" value={company.bankAccount} onChange={(e) => setCompany({...company, bankAccount: e.target.value})} />
+              <div className='mt-2'><Label>Total:</Label> ${calculateTotal().toFixed(2)}</div>
+            </div>
           </div>
-          <div> 
-              <Label>Bank Name</Label>
-              <Input label="Bank Name" value={company.bankName} onChange={(e) => setCompany({...company, bankName: e.target.value})} />
-          </div>
+          <Button onClick={handlePrint}>Print Invoice</Button>
         </CardContent>
       </Card>
     </div>
   );
-}
+};
 
-export default App;
+export default function App() {
+  return <InvoiceBuilder />;
+}
