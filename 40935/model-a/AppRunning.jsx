@@ -1,9 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tooltip } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 
 const PasswordGenerator = () => {
   const [password, setPassword] = useState('');
@@ -93,11 +95,13 @@ const PasswordGenerator = () => {
               />
               <div className="flex justify-between">
                 <Button onClick={generatePassword}>Regenerate</Button>
-                <Tooltip content={copied ? "Copied!" : "Copy to clipboard"}>
-                  <Button onClick={copyToClipboard} variant="outline">
-                    {copied ? "Copied!" : "Copy"}
-                  </Button>
-                </Tooltip>
+                <TooltipProvider>
+                  <Tooltip content={copied ? "Copied!" : "Copy to clipboard"}>
+                    <Button onClick={copyToClipboard} variant="outline">
+                      {copied ? "Copied!" : "Copy"}
+                    </Button>
+                  </Tooltip>
+                  </TooltipProvider>
               </div>
             </div>
           )}
