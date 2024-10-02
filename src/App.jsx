@@ -17,11 +17,11 @@ function CurrencyInput({ currency, value, onChange, onSelect }) {
       <Label htmlFor={currency}>{currency}</Label>
       <div className="flex items-center">
         <span className="mr-2">{CURRENCIES[currency].symbol}</span>
-        <Input
-          id={currency}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          type="number"
+        <Input 
+          id={currency} 
+          value={value} 
+          onChange={(e) => onChange(e.target.value)} 
+          type="number" 
           className="flex-grow"
         />
         <Button onClick={() => onSelect(currency)} variant="outline" className="ml-2">
@@ -63,7 +63,7 @@ export default function App() {
         </CardHeader>
         <CardContent className="space-y-4">
           {Object.keys(CURRENCIES).map(currency => (
-            <CurrencyInput
+            <CurrencyInput 
               key={currency}
               currency={currency}
               value={conversions[currency] || ''}
