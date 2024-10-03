@@ -1,15 +1,20 @@
 // App.jsx
 import React, { useState, useRef } from 'react';
-import { Copy } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardFooter, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertTitle } from "@/components/ui/alert";
-import { number } from 'zod';
 
-const getRandomCharFrom = (str) => str.charAt(Math.floor(Math.random() * str.length))
+const getRandomCharsFrom = (str, n) => {
+  let output = "";
+  for (let i=0; i<n; i++) {
+    output = output + str.charAt(Math.floor(Math.random() * str.length))
+  }
+  return output;
+}
+
 const stringInsertAt = (input, index, string) => input.substr(0, index) + string + input.substr(index);
 
 const App = () => {
@@ -26,33 +31,37 @@ const App = () => {
     let chars = "abcdefghijklmnopqrstuvwxyz";
     let password = '', capitals = '', numbers = '', specialChars = ''
     let n = length;
-    
     if (useCapitals) {
+      let nParts = Math.ceil(Math.random() * length/ 4);
       capitals += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      n = n - 2;
-      capitals = getRandomCharFrom(capitals) + getRandomCharFrom(capitals)
+      n = n - nParts;
+      capitals = getRandomCharsFrom(capitals, nParts)
     }
     if (useNumbers) {
-      n = n - 2;
+      let nParts = Math.ceil(Math.random() * length/ 4);
       numbers += "0123456789";
-      numbers = getRandomCharFrom(numbers) + getRandomCharFrom(numbers)
+      n = n - nParts;
+      numbers = getRandomCharsFrom(numbers, nParts)
     }
 
     if (useSpecialChars) {
-      n = n - 2;
+      let nParts = Math.ceil(Math.random() * length/ 4);
       specialChars += "!@#$%^&*()_+~`|}{[]:;?><,./-=";
-      specialChars = getRandomCharFrom(specialChars) + getRandomCharFrom(specialChars)
+      n = n - nParts;
+      specialChars = getRandomCharsFrom(specialChars, nParts)
     }
 
     for (let i = 0; i < n; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
     }
 
-    for (let i = 0; i < 2; i++) {
-      if (useCapitals) password = stringInsertAt(password, Math.floor(Math.random() * password.length), capitals[i])
-      if (useNumbers) password = stringInsertAt(password, Math.floor(Math.random() * password.length), numbers[i])
-      if (useSpecialChars) password = stringInsertAt(password, Math.floor(Math.random() * password.length), specialChars[i])
-    }
+    for (const char of capitals) 
+      password = stringInsertAt(password, Math.floor(Math.random() * password.length), char)
+    for (const char of numbers) 
+      password = stringInsertAt(password, Math.floor(Math.random() * password.length), char)
+    for (const char of specialChars) 
+      password = stringInsertAt(password, Math.floor(Math.random() * password.length), char)
+    
     setPassword(password);
   };
 
@@ -102,8 +111,7 @@ const App = () => {
                 className="mr-2"
               >
               </Checkbox>
-              <Label htmlFor="capitals" className="ml-2">Include Capital Letters</Label>
-              
+              <Label htmlFor="capitals">Include Capital Letters</Label>
             </div>
             <div>
               <Checkbox 
@@ -113,7 +121,7 @@ const App = () => {
                 className="mr-2"
               >
               </Checkbox>
-              <Label htmlFor="numbers" className="ml-2">Include Numbers</Label>
+              <Label htmlFor="numbers">Include Numbers</Label>
             </div>
             <Input 
               ref={passwordRef}
@@ -126,7 +134,7 @@ const App = () => {
         <CardFooter className="flex justify-between">
           <Button onClick={generatePassword}>Generate New Password</Button>
           <Button onClick={copyToClipboard} disabled={!password} variant="outline">
-            <Copy className='mr-2' />Copy Password</Button>
+            Copy Password</Button>
         </CardFooter>
         <div>
           {copySuccess && 
