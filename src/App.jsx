@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const InvoiceBuilder = () => {
+  const [buttonVisibility, setButtonVisibility] = useState({
+    addItem: true,
+    printInvoice: true
+  })
   const [invoice, setInvoice] = useState({
     number: Math.floor(Math.random() * 10000),
     date: new Date().toISOString().split('T')[0],
@@ -13,7 +17,7 @@ const InvoiceBuilder = () => {
     tax: 0,
     client: { name: '', address: '', contact: '', email: '' },
     items: [{ name: '', quantity: 1, unitPrice: 0, itemPrice: 0 }],
-    company: { name: '', address: '', bank: { accountNumber: '', bankName: '' } }
+    company: { name: '', address: '', accountNumber: '', bankName: '' }
   });
 
   const calculateTotal = () => {
@@ -50,11 +54,25 @@ const InvoiceBuilder = () => {
   const handlePrint = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    window.print();
+    setButtonVisibility({
+      addItem: false,
+      printInvoice: false
+    })
+    setTimeout(() => {
+      window.print();
+      handlePageFocus();
+    }, 10)
   };
 
+  const handlePageFocus = () => {
+    setButtonVisibility({
+      addItem: true,
+      printInvoice: true
+    })
+  }
+
   return (
-    <div className="p-4 sm:p-8">
+    <div className="p-4 sm:p-8" onFocus={handlePageFocus}>
       <Card className="max-w-3xl mx-auto">
         <CardHeader>
           <CardTitle>Invoice Builder</CardTitle>
@@ -74,8 +92,8 @@ const InvoiceBuilder = () => {
               </div>
             
                 <Label className="border-b-2">Client Details</Label>
-                {['name', 'address', 'contact', 'email'].map(field => (
-                  <div className="flex">
+                {['name', 'address', 'contact', 'email'].map((field, i) => (
+                  <div className="flex" key={`${field}_${i}`}>
                     <div className='w-16 mr-2 align-bottom pt-2'><Label className="" >{field.replace(/^\w/, c => c.toUpperCase())}</Label></div>
                     <div>
                       <Input 
@@ -92,8 +110,8 @@ const InvoiceBuilder = () => {
 
               <div className="mb-4 mt-4">
                 <Label className="border-b-2">Company Details</Label>
-                {['name', 'address'].map(field => (
-                  <div className="flex">
+                {['name', 'address'].map((field, i) => (
+                  <div className="flex" key={`${field}_${i}`}>
                     <div className='w-16 mr-2 align-bottom pt-2'>
                       <Label className="" >{field.replace(/^\w/, c => c.toUpperCase())}</Label>
                     </div>
@@ -114,8 +132,8 @@ const InvoiceBuilder = () => {
                   </div>
                   <div>
                     <Input 
-                      placeholder="Account Number" value={invoice.companyBankAccountNumber}
-                      onChange={(e) => updateField('companyBankAccountNumber', e.target.value)}
+                      placeholder="Account Number" value={invoice.company.accountNumber}
+                      onChange={(e) => updateField('accountNumber', e.target.value, 'company')}
                       className="mt-2 w-fit" 
                       required
                     />
@@ -128,8 +146,8 @@ const InvoiceBuilder = () => {
                   </div>
                   <div>
                     <Input 
-                      placeholder="Bank Name" value={invoice.companyBankName}
-                      onChange={(e) => updateField('bankName', e.target.value)}
+                      placeholder="Bank Name" value={invoice.company.bankName}
+                      onChange={(e) => updateField('bankName', e.target.value, 'company')}
                       className="mt-2 w-fit" 
                       required
                     />
@@ -141,10 +159,10 @@ const InvoiceBuilder = () => {
                 <Table className="mt-2">
                   <TableHeader>
                     <TableRow>
-                      <TableHead class="min-w-35">Name</TableHead>
-                      <TableHead class="min-w-5">Quantity</TableHead>
-                      <TableHead class="min-w-5">Unit Price</TableHead>
-                      <TableHead class="min-w-5" className="p-1 text-right">Price</TableHead>
+                      <TableHead className="min-w-35">Name</TableHead>
+                      <TableHead className="min-w-5">Quantity</TableHead>
+                      <TableHead className="min-w-5">Unit Price</TableHead>
+                      <TableHead className="min-w-5 p-1 text-right">Price</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -158,11 +176,13 @@ const InvoiceBuilder = () => {
                     ))}
                   </TableBody>
                 </Table>
-                <Button onClick={addItem} className="mt-2">Add Item</Button>
+                {buttonVisibility.addItem &&
+                  <Button onClick={addItem} className="mt-2">Add Item</Button>
+                }
               </div>
-              <div class="flex">
+              <div className="flex">
                   <div className='w-16 mr-2 align-bottom pt-2'>
-                    <Label>Text (%):</Label>
+                    <Label>Tax (%):</Label>
                   </div>
                   <div>
                     <Input 
@@ -171,7 +191,7 @@ const InvoiceBuilder = () => {
                     />
                   </div>
               </div>
-              <div class="flex">
+              <div className="flex">
                   <div className='w-16 mr-2 align-bottom pt-2'>
                     <Label>Total:</Label>
                   </div>
@@ -180,7 +200,9 @@ const InvoiceBuilder = () => {
                   </div>
               </div>
             </div>
-            <Button type="submit">Print Invoice</Button>
+            {buttonVisibility.printInvoice &&
+              <Button type="submit">Print Invoice</Button>
+            }
           </form>
         </CardContent>
       </Card>
