@@ -71,32 +71,67 @@ const InvoiceBuilder = () => {
                 <Input type="date" value={invoice.date} onChange={(e) => updateField('date', e.target.value)} />
               </div>
             </div>
-            <div className="mb-4">
-              <Label>Client Details</Label>
+           
+              <Label className="border-b-2">Client Details</Label>
               {['name', 'address', 'contact', 'email'].map(field => (
-                <Input key={field} placeholder={field.replace(/^\w/, c => c.toUpperCase())}
-                  value={invoice.client[field]}
-                  onChange={(e) => updateField(field, e.target.value, 'client')}
-                  className="mt-2" />
+                <div class="flex">
+                  <div className='w-16 mr-2 align-bottom pt-2'><Label className="" >{field.replace(/^\w/, c => c.toUpperCase())}</Label></div>
+                  <div>
+                    <Input 
+                      key={field} placeholder={field.replace(/^\w/, c => c.toUpperCase())}
+                      value={invoice.client[field]}
+                      onChange={(e) => updateField(field, e.target.value, 'client')}
+                      className="mt-2 w-fit" 
+                    />
+                  </div>
+                </div>
               ))}
-            </div>
-            <div className="mb-4">
-              <Label>Company Details</Label>
+
+            <div className="mb-4 mt-4">
+              <Label className="border-b-2">Company Details</Label>
               {['name', 'address'].map(field => (
-                <Input key={field} placeholder={field.replace(/^\w/, c => c.toUpperCase())}
-                  value={invoice.company[field]}
-                  onChange={(e) => updateField(field, e.target.value, 'company')}
-                  className="mt-2" />
+                <div class="flex">
+                  <div className='w-16 mr-2 align-bottom pt-2'>
+                    <Label className="" >{field.replace(/^\w/, c => c.toUpperCase())}</Label>
+                  </div>
+                  <div>
+                    <Input 
+                      key={field} placeholder={field.replace(/^\w/, c => c.toUpperCase())}
+                      value={invoice.company[field]}
+                      onChange={(e) => updateField(field, e.target.value, 'company')}
+                      className="mt-2 w-fit" 
+                    />
+                  </div>
+                </div>
               ))}
-              <Input placeholder="Account Number" value={invoice.company.bank.accountNumber}
-                onChange={(e) => updateField('accountNumber', e.target.value, 'company.bank')}
-                className="mt-2" />
-              <Input placeholder="Bank Name" value={invoice.company.bank.bankName}
-                onChange={(e) => updateField('bankName', e.target.value, 'company.bank')}
-                className="mt-2" />
+              <div class="flex">
+                <div className='w-16 mr-2 align-bottom pt-2'>
+                  <Label>Account Number</Label>
+                </div>
+                <div>
+                  <Input 
+                    placeholder="Account Number" value={invoice.company.bank.accountNumber}
+                    onChange={(e) => updateField('accountNumber', e.target.value, 'company.bank')}
+                    className="mt-2 w-fit" 
+                  />
+                </div>
+              </div>
+
+              <div class="flex">
+                <div className='w-16 mr-2 align-bottom pt-2'>
+                  <Label>Bank Name</Label>
+                </div>
+                <div>
+                  <Input 
+                    placeholder="Bank Name" value={invoice.company.bank.bankName}
+                    onChange={(e) => updateField('bankName', e.target.value, 'company.bank')}
+                    className="mt-2 w-fit" 
+                  />
+                </div>
+              </div>
             </div>
             <div className="mb-4">
-              <Label>Items</Label>
+              <Label className="border-b-2">Items</Label>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -119,12 +154,24 @@ const InvoiceBuilder = () => {
               </Table>
               <Button onClick={addItem} className="mt-2">Add Item</Button>
             </div>
-            <div className="">
-              <div>
-                <Label>Text (%):</Label>
-                <Input type="number" placeholder="Tax (%)" value={invoice.tax} onChange={(e) => updateField('tax', e.target.value)} />
-              </div>
-              <div className='mt-2'><Label>Total:</Label> ${calculateTotal().toFixed(2)}</div>
+            <div class="flex">
+                <div className='w-16 mr-2 align-bottom pt-2'>
+                  <Label>Text (%):</Label>
+                </div>
+                <div>
+                  <Input 
+                    type="number" placeholder="Tax (%)" value={invoice.tax} onChange={(e) => updateField('tax', e.target.value)}
+                    className="mt-2 w-fit" 
+                  />
+                </div>
+            </div>
+            <div class="flex">
+                <div className='w-16 mr-2 align-bottom pt-2'>
+                  <Label>Total:</Label>
+                </div>
+                <div className='w-16 mr-2 align-bottom pt-2'>
+                    ${calculateTotal().toFixed(2)}
+                </div>
             </div>
           </div>
           <Button onClick={handlePrint}>Print Invoice</Button>
