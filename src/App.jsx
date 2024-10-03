@@ -27,25 +27,36 @@ function CurrencyInput({ currency, value, onValueChange }) {
   );
 }
 
+const inital_values = {
+  USD: "", EUR: "", GBP: "", INR: ""
+}
+
+function format(value, precision=2) {
+  return parseFloat((+value).toFixed(2))
+}
+
 function App() {
-  const [amounts, setAmounts] = useState({
-    USD: 0, EUR: 0, GBP: 0, INR: 0
-  });
+  const [amounts, setAmounts] = useState(inital_values);
 
   // Function to convert currency
   const convertCurrency = (fromCurrency, amount) => {
     const usdValue = amount / CURRENCY_RATES[fromCurrency];
     return Object.keys(CURRENCY_RATES).reduce((acc, curr) => {
       if (curr === fromCurrency) {
-        acc[curr] = (usdValue * CURRENCY_RATES[curr])  
+        acc[curr] = format(usdValue * CURRENCY_RATES[curr])
       } else {
-        acc[curr] = (usdValue * CURRENCY_RATES[curr]).toFixed(2);
+        acc[curr] = format(usdValue * CURRENCY_RATES[curr]);
       }
       return acc;
     }, {});
   };
 
   const handleAmountChange = (currency, value) => {
+    if (!value) {
+      setAmounts(inital_values)
+      return
+    }
+    value = format(value)
     const newAmounts = convertCurrency(currency, value);
     setAmounts(newAmounts);
   };
